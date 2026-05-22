@@ -130,7 +130,6 @@ export default function StoryBanner() {
             className="w-full h-full object-cover select-none scale-105"
             autoPlay
             muted={true}
-            defaultMuted={true}
             playsInline={true}
             preload="auto"
             onError={handleVideo1Error}
@@ -155,7 +154,6 @@ export default function StoryBanner() {
             className="w-full h-full object-cover select-none scale-105"
             autoPlay
             muted={true}
-            defaultMuted={true}
             playsInline={true}
             preload="auto"
             onError={handleVideo2Error}
