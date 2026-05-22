@@ -32,6 +32,12 @@ export default function StoryBanner() {
 
     setIsVideoLoading(true);
 
+    // Safety timeout: dismiss the loading screen after a max of 2 seconds, no matter what,
+    // to prevent mobile users or low-power mode users from being stuck on a blur screen.
+    const loadingSafetyTimeout = setTimeout(() => {
+      setIsVideoLoading(false);
+    }, 2000);
+
     if (activeVideo === 1) {
       if (v1) {
         v1.muted = true;
@@ -63,6 +69,10 @@ export default function StoryBanner() {
         v1.pause();
       }
     }
+
+    return () => {
+      clearTimeout(loadingSafetyTimeout);
+    };
   }, [activeVideo]);
 
   // Bulletproof user gesture event listener to trigger audio-less autoplay on touch or interaction
@@ -125,13 +135,22 @@ export default function StoryBanner() {
           activeVideo === 1 ? "opacity-100 z-0" : "opacity-0 -z-10"
         }`}>
           <video
-            ref={video1Ref}
+            ref={(el) => {
+              // @ts-ignore
+              video1Ref.current = el;
+              if (el) {
+                el.defaultMuted = true;
+                el.muted = true;
+                el.playsInline = true;
+              }
+            }}
             src={video1Src}
             className="w-full h-full object-cover select-none scale-105"
             autoPlay
             muted={true}
             playsInline={true}
             preload="auto"
+            poster="/src/assets/images/about_pet_transport_1779480827514.png"
             onError={handleVideo1Error}
             onPlay={() => setIsVideoLoading(false)}
             onPlaying={() => setIsVideoLoading(false)}
@@ -149,13 +168,22 @@ export default function StoryBanner() {
           activeVideo === 2 ? "opacity-100 z-0" : "opacity-0 -z-10"
         }`}>
           <video
-            ref={video2Ref}
+            ref={(el) => {
+              // @ts-ignore
+              video2Ref.current = el;
+              if (el) {
+                el.defaultMuted = true;
+                el.muted = true;
+                el.playsInline = true;
+              }
+            }}
             src={video2Src}
             className="w-full h-full object-cover select-none scale-105"
             autoPlay
             muted={true}
             playsInline={true}
             preload="auto"
+            poster="/src/assets/images/hero_pet_travel_1779480808070.png"
             onError={handleVideo2Error}
             onPlay={() => setIsVideoLoading(false)}
             onPlaying={() => setIsVideoLoading(false)}
