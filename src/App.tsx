@@ -1472,7 +1472,7 @@ export default function App() {
               return (
                 <div
                   key={idx}
-                  className="bg-white rounded-2xl border border-orange-100/50 shadow-sm overflow-hidden"
+                  className="bg-white rounded-2xl border border-orange-100/50 shadow-sm overflow-hidden transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-brand-orange/20"
                 >
                   <button
                     onClick={() => toggleFaq(idx)}
