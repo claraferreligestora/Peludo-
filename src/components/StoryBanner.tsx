@@ -6,22 +6,26 @@ export default function StoryBanner() {
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
 
-  // States for sequential playback, mute, and video buffering/loading
+  // Fallback direct-play stream URLs for happy dogs in cars if Google Drive triggers security/quota blocks on Vercel
+  const [video1Src, setVideo1Src] = useState("https://drive.google.com/uc?export=download&id=1tFL37dsyy-eZgO70j6LPGHPIaxoVs73P");
+  const [video2Src, setVideo2Src] = useState("https://drive.google.com/uc?export=download&id=1kvU_lDGX_ZiD87xWQKVXao9zAO4lxn2N");
+
+  // States for sequential playback and video buffering/loading
   const [activeVideo, setActiveVideo] = useState<1 | 2>(1);
-  const [isMuted, setIsMuted] = useState(true);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
 
-  // Sync mute state changes to both video elements in background without resetting time
-  useEffect(() => {
-    if (video1Ref.current) {
-      video1Ref.current.muted = isMuted;
-    }
-    if (video2Ref.current) {
-      video2Ref.current.muted = isMuted;
-    }
-  }, [isMuted]);
+  // Fallback handlers if Google Drive fails
+  const handleVideo1Error = () => {
+    console.log("Video 1 failed or blocked by Google Drive. Switching to ultra-reliable CDN stream.");
+    setVideo1Src("https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c022718e0df3d3522ba0a0ed8ee6ec02&profile_id=165&oauth2_token_id=57447761");
+  };
 
-  // Coordinate the transition when active video switches
+  const handleVideo2Error = () => {
+    console.log("Video 2 failed or blocked by Google Drive. Switching to ultra-reliable CDN stream.");
+    setVideo2Src("https://player.vimeo.com/external/435674703.sd.mp4?s=7f3aa1d1e174915b03511171852d43e5ec726e85&profile_id=165&oauth2_token_id=57447761");
+  };
+
+  // Coordinate the transition when active video switches, ensuring strict muted attributes
   useEffect(() => {
     const v1 = video1Ref.current;
     const v2 = video2Ref.current;
@@ -30,11 +34,12 @@ export default function StoryBanner() {
 
     if (activeVideo === 1) {
       if (v1) {
+        v1.muted = true;
         v1.currentTime = 0;
         const playPromise = v1.play();
         if (playPromise !== undefined) {
           playPromise.catch(err => {
-            console.log("Video 1 playback attempt:", err);
+            console.log("Video 1 autoplay was prevented:", err);
             setIsVideoLoading(false);
           });
         }
@@ -44,11 +49,12 @@ export default function StoryBanner() {
       }
     } else {
       if (v2) {
+        v2.muted = true;
         v2.currentTime = 0;
         const playPromise = v2.play();
         if (playPromise !== undefined) {
           playPromise.catch(err => {
-            console.log("Video 2 playback attempt:", err);
+            console.log("Video 2 autoplay was prevented:", err);
             setIsVideoLoading(false);
           });
         }
@@ -59,33 +65,35 @@ export default function StoryBanner() {
     }
   }, [activeVideo]);
 
-  // Bulletproof interaction listener to bypass aggressive mobile/browser autoplay restrictions
+  // Bulletproof user gesture event listener to trigger audio-less autoplay on touch or interaction
   useEffect(() => {
-    const startAutoplay = () => {
+    const forcePlay = () => {
       const activeElement = activeVideo === 1 ? video1Ref.current : video2Ref.current;
-      if (activeElement && activeElement.paused) {
-        activeElement.play().catch(err => {
-          console.log("User gesture auto-play attempt:", err);
-        });
+      if (activeElement) {
+        activeElement.muted = true;
+        if (activeElement.paused) {
+          activeElement.play().catch(err => {
+            console.log("User interaction play fallback failed:", err);
+          });
+        }
       }
     };
 
-    // Listen to various user engagement signals to kick off the video if blocked
-    window.addEventListener("touchstart", startAutoplay, { once: true });
-    window.addEventListener("click", startAutoplay, { once: true });
-    window.addEventListener("scroll", startAutoplay, { once: true });
-    window.addEventListener("mousemove", startAutoplay, { once: true });
+    window.addEventListener("touchstart", forcePlay, { once: true });
+    window.addEventListener("click", forcePlay, { once: true });
+    window.addEventListener("scroll", forcePlay, { once: true });
+    window.addEventListener("mousemove", forcePlay, { once: true });
 
-    // Also trigger immediately on mount/load
-    startAutoplay();
+    // Try starting immediately
+    forcePlay();
 
     return () => {
-      window.removeEventListener("touchstart", startAutoplay);
-      window.removeEventListener("click", startAutoplay);
-      window.removeEventListener("scroll", startAutoplay);
-      window.removeEventListener("mousemove", startAutoplay);
+      window.removeEventListener("touchstart", forcePlay);
+      window.removeEventListener("click", forcePlay);
+      window.removeEventListener("scroll", forcePlay);
+      window.removeEventListener("mousemove", forcePlay);
     };
-  }, [activeVideo]);
+  }, [activeVideo, video1Src, video2Src]);
 
   return (
     <section id="banner-reels" className="w-full relative min-h-[580px] md:min-h-[660px] md:h-auto pt-24 pb-16 sm:pt-28 sm:pb-20 md:pt-36 md:pb-24 flex items-center justify-center bg-zinc-950 overflow-hidden border-y-4 border-dashed border-brand-orange/20">
@@ -118,12 +126,13 @@ export default function StoryBanner() {
         }`}>
           <video
             ref={video1Ref}
-            src="https://drive.google.com/uc?export=download&id=1tFL37dsyy-eZgO70j6LPGHPIaxoVs73P"
+            src={video1Src}
             className="w-full h-full object-cover select-none scale-105"
             autoPlay
-            muted={isMuted}
-            playsInline
+            muted={true}
+            playsInline={true}
             preload="auto"
+            onError={handleVideo1Error}
             onPlay={() => setIsVideoLoading(false)}
             onPlaying={() => setIsVideoLoading(false)}
             onWaiting={() => setIsVideoLoading(true)}
@@ -141,12 +150,13 @@ export default function StoryBanner() {
         }`}>
           <video
             ref={video2Ref}
-            src="https://drive.google.com/uc?export=download&id=1kvU_lDGX_ZiD87xWQKVXao9zAO4lxn2N"
+            src={video2Src}
             className="w-full h-full object-cover select-none scale-105"
             autoPlay
-            muted={isMuted}
-            playsInline
+            muted={true}
+            playsInline={true}
             preload="auto"
+            onError={handleVideo2Error}
             onPlay={() => setIsVideoLoading(false)}
             onPlaying={() => setIsVideoLoading(false)}
             onWaiting={() => setIsVideoLoading(true)}
