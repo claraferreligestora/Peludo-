@@ -6,23 +6,23 @@ export default function StoryBanner() {
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
 
-  // Fallback direct-play stream URLs for happy dogs in cars if Google Drive triggers security/quota blocks on Vercel
-  const [video1Src, setVideo1Src] = useState("https://drive.google.com/uc?export=download&id=1tFL37dsyy-eZgO70j6LPGHPIaxoVs73P");
-  const [video2Src, setVideo2Src] = useState("https://drive.google.com/uc?export=download&id=1kvU_lDGX_ZiD87xWQKVXao9zAO4lxn2N");
+  // High-reliability direct-play stream URLs for happy dogs in cars to prevent Google Drive quota blocks/redirect bugs on Vercel
+  const [video1Src, setVideo1Src] = useState("https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c022718e0df3d3522ba0a0ed8ee6ec02&profile_id=165&oauth2_token_id=57447761");
+  const [video2Src, setVideo2Src] = useState("https://player.vimeo.com/external/435674703.sd.mp4?s=7f3aa1d1e174915b03511171852d43e5ec726e85&profile_id=165&oauth2_token_id=57447761");
 
   // States for sequential playback and video buffering/loading
   const [activeVideo, setActiveVideo] = useState<1 | 2>(1);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
 
-  // Fallback handlers if Google Drive fails
+  // Fallback handlers if any stream has issues (pointing to alternate open-source CDN streams)
   const handleVideo1Error = () => {
-    console.log("Video 1 failed or blocked by Google Drive. Switching to ultra-reliable CDN stream.");
-    setVideo1Src("https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c022718e0df3d3522ba0a0ed8ee6ec02&profile_id=165&oauth2_token_id=57447761");
+    console.log("Video 1 stream error. Activating backup stream.");
+    setVideo1Src("https://player.vimeo.com/external/435674703.sd.mp4?s=7f3aa1d1e174915b03511171852d43e5ec726e85&profile_id=165&oauth2_token_id=57447761");
   };
 
   const handleVideo2Error = () => {
-    console.log("Video 2 failed or blocked by Google Drive. Switching to ultra-reliable CDN stream.");
-    setVideo2Src("https://player.vimeo.com/external/435674703.sd.mp4?s=7f3aa1d1e174915b03511171852d43e5ec726e85&profile_id=165&oauth2_token_id=57447761");
+    console.log("Video 2 stream error. Activating backup stream.");
+    setVideo2Src("https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c022718e0df3d3522ba0a0ed8ee6ec02&profile_id=165&oauth2_token_id=57447761");
   };
 
   // Coordinate the transition when active video switches, ensuring strict muted attributes
@@ -130,6 +130,7 @@ export default function StoryBanner() {
             className="w-full h-full object-cover select-none scale-105"
             autoPlay
             muted={true}
+            defaultMuted={true}
             playsInline={true}
             preload="auto"
             onError={handleVideo1Error}
@@ -154,6 +155,7 @@ export default function StoryBanner() {
             className="w-full h-full object-cover select-none scale-105"
             autoPlay
             muted={true}
+            defaultMuted={true}
             playsInline={true}
             preload="auto"
             onError={handleVideo2Error}
