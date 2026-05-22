@@ -1,0 +1,6 @@
+{
+  "name": "Táxi Cão - Peludo Viajante",
+  "description": "Serviço especializado de transporte pet seguro, confortável e humanizado.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
